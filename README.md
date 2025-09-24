@@ -1,66 +1,38 @@
-## Foundry
+# Staking DApp
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+This project implements a simple staking rewards contract using Solidity and is tested with Foundry.
 
-Foundry consists of:
+## The Staking Contract
 
--   **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
--   **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
--   **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
--   **Chisel**: Fast, utilitarian, and verbose solidity REPL.
+The core logic is in `src/Staking.sol`. The `StakingRewards` contract allows users to stake a specific ERC20 token and earn rewards in another ERC20 token.
 
-## Documentation
+### Key Features:
 
-https://book.getfoundry.sh/
+*   **Staking:** Users can stake their tokens using the `stake(uint256 _amount)` function.
+*   **Withdrawing:** Users can withdraw their staked tokens using the `withdraw(uint256 _amount)` function.
+*   **Earning Rewards:** Rewards are calculated based on the staked amount and the duration of the stake.
+*   **Claiming Rewards:** Users can claim their earned rewards using the `getReward()` function.
 
-## Usage
+### For the Owner:
 
-### Build
+The contract owner has administrative privileges:
 
-```shell
-$ forge build
-```
+*   `setRewardsDuration(uint256 _duration)`: To set the duration over which rewards are distributed.
+*   `notifyRewardAmount(uint256 _amount)`: To fund the contract with reward tokens and start the distribution.
 
-### Test
+## Testing
 
-```shell
-$ forge test
-```
+The project uses the [Foundry](https://book.getfoundry.sh/) framework for testing. The tests are located in `test/Staking.t.sol`.
 
-### Format
+The tests cover the full functionality of the `StakingRewards` contract, including:
 
-```shell
-$ forge fmt
-```
+*   Staking and withdrawing funds.
+*   Correct reward calculation.
+*   Access control for owner-only functions.
+*   Edge cases such as staking zero amounts or interacting with the contract when no rewards are available.
 
-### Gas Snapshots
+The tests make use of Foundry's cheatcodes like `vm.prank` to simulate calls from different users, `vm.warp` to manipulate block timestamps for testing time-dependent logic, and `deal` to give accounts tokens.
 
-```shell
-$ forge snapshot
-```
+## Test Coverage
 
-### Anvil
-
-```shell
-$ anvil
-```
-
-### Deploy
-
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
-```
-
-### Cast
-
-```shell
-$ cast <subcommand>
-```
-
-### Help
-
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
-```
+![Staking contract coverage](./image.png)
