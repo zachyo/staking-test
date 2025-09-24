@@ -136,7 +136,7 @@ contract StakingTest is Test {
         // trigger setRewards distribution revert
         vm.expectRevert("reward duration not finished");
         staking.setRewardsDuration(1 weeks);
-    }
+    }    
 
     function test_getReward_functionality() public {
         // Setup rewards
@@ -204,5 +204,31 @@ contract StakingTest is Test {
         staking.notifyRewardAmount(100 ether);
         vm.stopPrank();
     }
-    
+
+    function test_notify_reward_amount_during_active_period() public {
+        // Test the second branch of notifyRewardAmount (when rewards are still active)
+        vm.startPrank(owner);
+        staking.setRewardsDuration(2 weeks);
+        deal(address(rewardToken), owner, 200 ether);
+        IERC20(address(rewardToken)).transfer(address(staking), 200 ether);
+
+        // First notification
+        staking.notifyRewardAmount(100 ether);
+        uint256 firstRewardRate = staking.rewardRate();
+
+        // Fast forward but not past finish time
+        vm.warp(block.timestamp + 1 weeks);
+
+        // Second notification while still active
+        staking.notifyRewardAmount(100 ether);
+        uint256 secondRewardRate = staking.rewardRate();
+
+        // Second reward rate should account for remaining rewards
+        assertGt(
+            secondRewardRate,
+            firstRewardRate,
+            "Second reward rate should be higher due to remaining rewards"
+        );
+        vm.stopPrank();
+    }
 }
