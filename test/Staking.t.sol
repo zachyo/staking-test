@@ -18,25 +18,14 @@ contract StakingTest is Test {
         vm.startPrank(owner);
         stakingToken = new MockERC20();
         rewardToken = new MockERC20();
-        staking = new StakingRewards(
-            address(stakingToken),
-            address(rewardToken)
-        );
+        staking = new StakingRewards(address(stakingToken), address(rewardToken));
         vm.stopPrank();
     }
 
     function test_alwaysPass() public {
         assertEq(staking.owner(), owner, "Wrong owner set");
-        assertEq(
-            address(staking.stakingToken()),
-            address(stakingToken),
-            "Wrong staking token address"
-        );
-        assertEq(
-            address(staking.rewardsToken()),
-            address(rewardToken),
-            "Wrong reward token address"
-        );
+        assertEq(address(staking.stakingToken()), address(stakingToken), "Wrong staking token address");
+        assertEq(address(staking.rewardsToken()), address(rewardToken), "Wrong reward token address");
 
         assertTrue(true);
     }
@@ -45,10 +34,7 @@ contract StakingTest is Test {
         deal(address(stakingToken), bob, 10e18);
         // start prank to assume user is making subsequent calls
         vm.startPrank(bob);
-        IERC20(address(stakingToken)).approve(
-            address(staking),
-            type(uint256).max
-        );
+        IERC20(address(stakingToken)).approve(address(staking), type(uint256).max);
 
         // we are expecting a revert if we deposit/stake zero
         vm.expectRevert("amount = 0");
@@ -60,18 +46,11 @@ contract StakingTest is Test {
         deal(address(stakingToken), bob, 10e18);
         // start prank to assume user is making subsequent calls
         vm.startPrank(bob);
-        IERC20(address(stakingToken)).approve(
-            address(staking),
-            type(uint256).max
-        );
+        IERC20(address(stakingToken)).approve(address(staking), type(uint256).max);
         uint256 _totalSupplyBeforeStaking = staking.totalSupply();
         staking.stake(5e18);
         assertEq(staking.balanceOf(bob), 5e18, "Amounts do not match");
-        assertEq(
-            staking.totalSupply(),
-            _totalSupplyBeforeStaking + 5e18,
-            "totalsupply didnt update correctly"
-        );
+        assertEq(staking.totalSupply(), _totalSupplyBeforeStaking + 5e18, "totalsupply didnt update correctly");
     }
 
     function test_cannot_withdraw_amount0() public {
@@ -86,16 +65,8 @@ contract StakingTest is Test {
         uint256 userStakebefore = staking.balanceOf(bob);
         uint256 totalSupplyBefore = staking.totalSupply();
         staking.withdraw(2e18);
-        assertEq(
-            staking.balanceOf(bob),
-            userStakebefore - 2e18,
-            "Balance didnt update correctly"
-        );
-        assertLt(
-            staking.totalSupply(),
-            totalSupplyBefore,
-            "total supply didnt update correctly"
-        );
+        assertEq(staking.balanceOf(bob), userStakebefore - 2e18, "Balance didnt update correctly");
+        assertLt(staking.totalSupply(), totalSupplyBefore, "total supply didnt update correctly");
     }
 
     function test_notify_Rewards() public {
@@ -127,16 +98,13 @@ contract StakingTest is Test {
         // trigger first type of flow success
         staking.notifyRewardAmount(100 ether);
         assertEq(staking.rewardRate(), uint256(100 ether) / uint256(1 weeks));
-        assertEq(
-            staking.finishAt(),
-            uint256(block.timestamp) + uint256(1 weeks)
-        );
+        assertEq(staking.finishAt(), uint256(block.timestamp) + uint256(1 weeks));
         assertEq(staking.updatedAt(), block.timestamp);
 
         // trigger setRewards distribution revert
         vm.expectRevert("reward duration not finished");
         staking.setRewardsDuration(1 weeks);
-    }    
+    }
 
     function test_getReward_functionality() public {
         // Setup rewards
@@ -150,10 +118,7 @@ contract StakingTest is Test {
         // Bob stakes
         deal(address(stakingToken), bob, 10e18);
         vm.startPrank(bob);
-        IERC20(address(stakingToken)).approve(
-            address(staking),
-            type(uint256).max
-        );
+        IERC20(address(stakingToken)).approve(address(staking), type(uint256).max);
         staking.stake(10e18);
 
         // Fast forward time
@@ -165,11 +130,7 @@ contract StakingTest is Test {
         staking.getReward();
 
         assertEq(staking.rewards(bob), 0, "Rewards should be reset to 0");
-        assertEq(
-            rewardToken.balanceOf(bob),
-            balanceBefore + earnedBefore,
-            "Should receive rewards"
-        );
+        assertEq(rewardToken.balanceOf(bob), balanceBefore + earnedBefore, "Should receive rewards");
         vm.stopPrank();
     }
 
@@ -183,11 +144,7 @@ contract StakingTest is Test {
     function test_rewardPerToken_with_zero_totalSupply() public {
         // Test rewardPerToken calculation when totalSupply is 0
         uint256 rewardPerToken = staking.rewardPerToken();
-        assertEq(
-            rewardPerToken,
-            staking.rewardPerTokenStored(),
-            "Should return stored value when totalSupply is 0"
-        );
+        assertEq(rewardPerToken, staking.rewardPerTokenStored(), "Should return stored value when totalSupply is 0");
     }
 
     function test_lastTimeRewardApplicable() public {
@@ -224,11 +181,7 @@ contract StakingTest is Test {
         uint256 secondRewardRate = staking.rewardRate();
 
         // Second reward rate should account for remaining rewards
-        assertGt(
-            secondRewardRate,
-            firstRewardRate,
-            "Second reward rate should be higher due to remaining rewards"
-        );
+        assertGt(secondRewardRate, firstRewardRate, "Second reward rate should be higher due to remaining rewards");
         vm.stopPrank();
     }
 }
